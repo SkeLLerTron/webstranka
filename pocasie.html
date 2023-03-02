@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="stylesheet" href="../static/style.css">
+	<meta charset="UTF-8">
+	<title>My Weather Station</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script src="https://cdn.socket.io/4.5.1/socket.io.min.js"></script>
+	<script>
+		$(document).ready(function(){
+			var socket = io.connect('http://' + document.domain + ':' + location.port);
+			socket.on('connect', function() {
+				console.log('Connected to server');
+			});
+
+			socket.on('values', function(data){
+			console.log('Received data: ', data);
+			$('#indoor_temp_1').text(data.indoor_temp_1);
+			$('#indoor_temp_2').text(data.indoor_temp_2);
+			$('#indoor_humidity_1').text(data.indoor_humidity_1);
+			$('#indoor_humidity_2').text(data.indoor_humidity_2);
+			$('#outdoor_temp').text(data.outdoor_temp);
+			$('#outdoor_humidity').text(data.outdoor_humidity);
+			$('#outdoor_feelslike').text(data.outdoor_feelslike);
+			$('#outdoor_sunrise').text(data.outdoor_sunrise);
+			$('#outdoor_sunset').text(data.outdoor_sunset);
+			$('#average_temp_indoors').text(data.average_temp_indoors);
+			$('#average_temp_outdoors').text(data.average_temp_outdoors);
+			$('#average_humidity_indoors').text(data.average_humidity_indoors);
+			$('#average_humidity_outdoors').text(data.average_humidity_outdoors);
+			$('#outdoor_windspeed').text(data.outdoor_windspeed);
+			$('#outdoor_snow').text(data.outdoor_snow);
+			$('#outdoor_snowdepth').text(data.outdoor_snowdepth);
+			$('#uvindex_value').text(data.outdoor_uvindex);
+			$('#outdoor_pressure').text(data.outdoor_pressure)
+			if (data.outdoor_uvindex >= 0 && data.outdoor_uvindex < 3) {
+				$('#uvindex_color').addClass('uv-low');
+			} else if (data.outdoor_uvindex < 6) {
+				$('#uvindex_color').addClass('uv-medium');
+			} else if (data.outdoor_uvindex < 8) {
+				$('#uvindex_color').addClass('uv-high');
+			} else if (data.outdoor_uvindex < 11) {
+				$('#uvindex_color').addClass('uv-very-high');
+			} else {
+				$('#uvindex_color').addClass('uv-extreme');
+			}
+			if (data.outdoor_snow === 0) {
+			$('#outdoor_snow').addClass('red');
+			} else {
+			$('#outdoor_snow').removeClass('red');
+			}
+			if (data.outdoor_snowdepth === 0) {
+			$('#outdoor_snowdepth').addClass('red');
+			} else {
+			$('#outdoor_snowdepth').removeClass('red');
+			}
+			var windSpeedKmh = data.outdoor_windspeed;
+			$('#outdoor_windspeed').text(data.outdoor_windspeed);
+			if (windSpeedKmh >= 1 && windSpeedKmh < 11) {
+				$('#outdoor_windcategory').text('Slabý vietor (light wind)');
+			} else if (windSpeedKmh >= 11 && windSpeedKmh < 30) {
+				$('#outdoor_windcategory').text('Mierny vietor (moderate wind)');
+			} else if (windSpeedKmh >= 30 && windSpeedKmh < 50) {
+				$('#outdoor_windcategory').text('Silný vietor (strong wind)');
+			} else if (windSpeedKmh >= 50 && windSpeedKmh < 75) {
+				$('#outdoor_windcategory').text('Veľmi silný vietor (very strong wind)');
+			} else if (windSpeedKmh >= 75 && windSpeedKmh < 90) {
+				$('#outdoor_windcategory').text('Búrka (storm)');
+			} else if (windSpeedKmh >= 90 && windSpeedKmh < 120) {
+				$('#outdoor_windcategory').text('Silná búrka (strong storm)');
+			} else if (windSpeedKmh >= 120) {
+				$('#outdoor_windcategory').text('Orkán (hurricane)');
+			}
+			});
+		});
+	</script>
+</head>
+<body>
+	<header>
+		<h1>My Weather Station</h1>
+	</header>
+
+	<main>
+		<div class="indoor">
+			<h2>Indoors</h2>
+			<table>				<thead>
+				<tr>
+					<th>Temperature Sensor</th>
+					<th>Temperature (°F)</th>
+					<th>Humidity (%)</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Sensor 1</td>
+					<td class="value" id="indoor_temp_1">--</td>
+					<td class="value" id="indoor_humidity_1">--</td>
+				</tr>
+				<tr>
+					<td>Sensor 2</td>
+					<td class="value" id="indoor_temp_2">--</td>
+					<td class="value" id="indoor_humidity_2">--</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<div class="outdoor">
+		<h2>Outdoors</h2>
+		<table>
+			<thead>
+				<tr>
+					<th>Temperature (°F)</th>
+					<th>Humidity (%)</th>
+					<th>Feels Like (°F)</th>
+					<th>Sunrise</th>
+					<th>Sunset</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td class="value" id="outdoor_temp">--</td>
+					<td class="value" id="outdoor_humidity">--</td>
+					<td class="value" id="outdoor_feelslike">--</td>
+					<td class="value" id="outdoor_sunrise">--</td>
+					<td class="value" id="outdoor_sunset">--</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<div class="average">
+		<h2>Averages</h2>
+		<table class="average-readings">
+			<thead>
+				<tr>
+					<th>Location</th>
+					<th>Temperature (°F)</th>
+					<th>Humidity (%)</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Indoors</td>
+					<td class="value" id="average_temp_indoors">--</td>
+					<td class="value" id="average_humidity_indoors">--</td>
+				</tr>
+				<tr>
+					<td>Outdoors</td>
+					<td class="value" id="average_temp_outdoors">--</td>
+					<td class="value" id="average_humidity_outdoors">--</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="outdoor-extras">
+		<h2>Extra Outdoor Readings</h2>
+		<table>
+		  <thead>
+			<tr>
+			  <th>Wind Speed (mph)</th>
+			  <th>Wind Category</th>
+			  <th>Snow Depth (in)</th>
+			  <th>Snow (in)</th>
+			  <th>Pressure (inHg)</th>
+			</tr>
+		  </thead>
+		  <tbody>
+			<tr>
+			  <td class="value" id="outdoor_windspeed">--</td>
+			  <td class="value" id="outdoor_windcategory">--</td>
+			  <td class="value" id="outdoor_snowdepth">--</td>
+			  <td class="value" id="outdoor_snow">--</td>
+			  <td class="value" id="outdoor_pressure">--</td>
+			</tr>
+		  </tbody>
+		</table>
+	  </div>
+	  
+	  
+	<div class="uvindex">
+		<h2>UV Index</h2>
+		<table>
+			<tbody>
+				<tr>
+					<td class="value" id="uvindex_value">--</td>
+					<td id="uvindex_color"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+</main>
+</body>
+</html>
+
